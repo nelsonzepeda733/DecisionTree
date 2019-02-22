@@ -1,3 +1,20 @@
+#survival - Survival (0 = No; 1 = Yes)
+#class - Passenger Class (1 = 1st; 2 = 2nd; 3 = 3rd)
+#name - Name
+#sex - Sex
+#age - Age
+#sibsp - Number of Siblings/Spouses Aboard
+#parch - Number of Parents/Children Aboard
+#ticket - Ticket Number
+#fare - Passenger Fare
+#cabin - Cabin
+#embarked - Port of Embarkation (C = Cherbourg; Q = Queenstown; S = Southampton)
+#boat - Lifeboat (if survived)
+#body - Body number (if did not survive and body was recovered)
+#
+
+
+
 titanic <- read.csv("C:/Users/Nelson/Desktop/Curso Machine Learning/AFPCrecer/CursoEstudio/ArbolesDecision/Ejercicios/titanic_clean.csv", header = TRUE, sep = ",")
 str(titanic)
 tail(titanic)
@@ -27,6 +44,8 @@ str(train)
 str(test)
 
 table(train$Survived)
+
+table(titanic$survived)
 
 prop.table(table(train$Survived))
 
@@ -80,7 +99,29 @@ my_tree_four <- rpart(Survived ~ Pclass + Sex + Age + SibSp + Parch + Fare + Emb
 
 					  
 					  
-fancyRpartPlot(my_tree_four)					  
+fancyRpartPlot(my_tree_four)		
+
+train_new <- train
+test_new <- test
+
+test_new$Title[test_new$Title==" Dona"]
+
+test_new$Title[test_new$Title==" Dona"] <- " Mrs"
+
+
+train_new$Name <- as.character(train_new$Name)
+test_new$Name <- as.character(test_new$Name)
+
+train_new$Title <- NA
+train_new$Title <- sapply(train_new$Name, FUN=function(x) {strsplit(x, split='[,.]')[[1]][2]})
+
+test_new$Title <- NA
+test_new$Title <- sapply(test_new$Name, FUN=function(x) {strsplit(x, split='[,.]')[[1]][2]})
+
+test_new$Title[test_new$Title==" Dona"]
+test_new$Title[test_new$Title==" Dona"] <- " Mrs"
+
+			  
 
 my_tree_five <- rpart(Survived ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked + Title, 
                       data = train_new, method = "class")
@@ -91,6 +132,31 @@ fancyRpartPlot(my_tree_five)
 
 my_prediction <- predict(my_tree_five, test_new, type = "class")
 
+test_new$Survived<-my_prediction
 
 my_solution <- data.frame(PassengerId = test_new$PassengerId, Survived = my_prediction)
 write.csv(my_solution, file = "my_solution.csv", row.names = FALSE)
+
+
+indices <- sample( 1:nrow( train_new ), 600 )
+test_new <- train_new[ indices, ]
+
+
+
+my_tree_roc <- rpart(Survived ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked + Title, 
+                      data = test_new, method = "class")
+my_prediction_roc <- predict(my_tree_roc, test_new, type = "class")
+
+
+
+test_new$Survived_Pred<-my_prediction_roc
+
+MC         <- table(test_new$Survived,test_new$Survived_Pred)
+
+install.packages("pROC")
+library("pROC")
+
+roc_obj <- roc(test_new$Survived, as.numeric(test_new$Survived_Pred))
+
+plot(roc_obj,col = "blue")
+auc(roc_obj)

@@ -45,7 +45,7 @@ plot(cum.gain, lwd = 3, col = "black", xlab="% Of population reached", ylab = "%
 
 
 
-
+#GRID: Definición de los Hyperparameters
 #Set the parameter grid and find the best model CP=Complexity Parameter
 CART.grid <- expand.grid(cp = (1:20)*0.0001)
 CART.model <- train(left~., data = train, method="rpart", trControl = eval.mode, tuneGrid = CART.grid, metric="ROC")

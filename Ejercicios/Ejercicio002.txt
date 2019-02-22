@@ -28,3 +28,22 @@ MC         <- table(Test[, "churn"],Prediccion) # Matriz de Confusión
 # ---------------------------------------------------------------------------
 rpart.plot(ModeloArbol, type=1, extra=100,cex = .7,
            box.col=c("gray99", "gray88")[ModeloArbol$frame$yval])
+		   
+str(Test)
+
+Test$churn_pred<-Prediccion		   
+
+library("pROC")
+
+roc_obj <- roc(as.numeric(Test$churn), as.numeric(Test$churn_pred))
+
+plot(roc_obj,col = "blue")
+auc(roc_obj)
+
+
+
+
+roc_obj <- roc(as.numeric(Test$churn_pred), as.numeric(Test$churn))
+
+plot(roc_obj,col = "blue")
+auc(roc_obj)
